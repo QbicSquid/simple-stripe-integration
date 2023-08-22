@@ -20,6 +20,7 @@ app.post("/pay", async (request, response) => {
         confirmation_method: "manual",
         confirm: true,
         return_url: "http://localhost:8080/public/redirect.html",
+        capture_method: 'manual',
       });
     } else if (request.body.payment_intent_id) {
       intent = await stripe.paymentIntents.confirm(
@@ -43,9 +44,14 @@ const generateResponse = (intent) => {
       payment_intent_client_secret: intent.client_secret,
     };
   } else if (intent.status === "succeeded") {
-    console.log(intent);
     return {
       success: true,
+    };
+  } else if (intent.status === "requires_capture") {
+    console.log("Payment needs to be captured:", intent.id);
+    return {
+      success: true,
+      requires_capture: true,
     };
   } else {
     return {
@@ -54,6 +60,22 @@ const generateResponse = (intent) => {
   }
 };
 
-app.listen(8080, () => {
-  console.log("Server is running");
+app.post("/capture", async (request, response) => {
+  const captureData = [request.body.payment_intent_id];
+  if (request.body.amount_to_capture) {
+    captureData.push({ amount_to_capture: request.body.amount_to_capture });
+  }
+
+  try {
+    const intent = await stripe.paymentIntents.capture(...captureData);
+    response.send(generateResponse(intent));
+  } catch (e) {
+    console.log(e.message);
+    return response.send({ error: e.message });
+  };
+});
+
+const PORT = 8080;
+app.listen(PORT, () => {
+  console.log(`Server is listening on port ${PORT}`);
 });

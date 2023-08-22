@@ -57,9 +57,13 @@ const stripePaymentMethodHandler = async (result) => {
 
 const handleServerResponse = (paymentResponse) => {
   if (paymentResponse.success) {
+    if (paymentResponse.requires_capture) {
+      alert("Payment successful, needs to be captured");
+      return;
+    }
     alert("Payment successful");
   } else {
     alert("Payment failed");
-    console.log(paymentResponse);
+    console.log("Payment failed", paymentResponse);
   }
 };
