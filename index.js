@@ -19,7 +19,7 @@ app.post("/pay", async (request, response) => {
         currency: "usd",
         confirmation_method: "manual",
         confirm: true,
-        return_url: "http://localhost:8080/public/redirect.html",
+        return_url: "http://localhost:8080/public/stripe.html",
         capture_method: 'manual',
       });
     } else if (request.body.payment_intent_id) {
