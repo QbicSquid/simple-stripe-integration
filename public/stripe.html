@@ -7,6 +7,7 @@
   </head>
   <body>
     <h1>Pay With Stripe</h1>
+
     <form id="payment-form">
       <label>
         Card details
@@ -15,6 +16,22 @@
       </label>
       <button type="submit">Submit Payment</button>
     </form>
+
+    <form id="capture-form" hidden>
+      <h2>Payment authorized but not captured</h2>
+      <input id="payment_intent_id" name="payment_intent_id" value="" type="hidden">
+      <div>
+        <span>Authoized amount</span>
+        <span id="authorized_amount">0</span>
+      </div>
+      <label>
+        Amount to caqpture
+        <input type="text" id="amount_to_capture" name="amount_to_capture">
+      </label>
+      <button type="submit">Capture Payment</button>
+      <button id="cancel-payment">Cancel Payment</button>
+    </form>
+
     <script src="stripe.js"></script>
   </body>
 </html>

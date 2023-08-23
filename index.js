@@ -52,10 +52,18 @@ const generateResponse = (intent) => {
     return {
       success: true,
       requires_capture: true,
+      payment_details: {
+        payment_intent_id: intent.id,
+        authorized_amount: intent.amount,
+      },
+    };
+  } else if (intent.status === "canceled") {
+    return {
+      canceled: true,
     };
   } else {
     return {
-      error: "Invalid PaymentIntent status",
+      error: `Invalid PaymentIntent status | status: ${intent.status}`,
     };
   }
 };
@@ -73,6 +81,18 @@ app.post("/capture", async (request, response) => {
     console.log(e.message);
     return response.send({ error: e.message });
   };
+});
+
+app.post("/cancel", async (request, response) => {
+  try {
+    const intent = await stripe.paymentIntents.cancel(
+      request.body.payment_intent_id,
+    );
+    response.send(generateResponse(intent));
+  } catch (e) {
+    console.log(e.message);
+    return response.send({ error: e.message });
+  }
 });
 
 const PORT = 8080;

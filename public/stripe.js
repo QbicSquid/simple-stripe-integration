@@ -23,9 +23,8 @@ const style = {
 const cardElement = elements.create("card", { style });
 cardElement.mount("#card-element");
 
-const form = document.getElementById("payment-form");
-
-form.addEventListener("submit", async (event) => {
+const paymentform = document.getElementById("payment-form");
+paymentform.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const result = await stripe.createPaymentMethod({
@@ -56,14 +55,58 @@ const stripePaymentMethodHandler = async (result) => {
 };
 
 const handleServerResponse = (paymentResponse) => {
+  console.log(paymentResponse);
   if (paymentResponse.success) {
     if (paymentResponse.requires_capture) {
+      document.getElementById("payment_intent_id").value = paymentResponse.payment_details.payment_intent_id;
+      document.getElementById("authorized_amount").innerHTML = (paymentResponse.payment_details.authorized_amount / 100).toFixed(2);
+      document.getElementById("capture-form").hidden = false;
       alert("Payment successful, needs to be captured");
       return;
     }
     alert("Payment successful");
+    document.location.reload();
+  } else if (paymentResponse.canceled) {
+    alert("Payment canceled");
+    document.location.reload();
   } else {
-    alert("Payment failed");
-    console.log("Payment failed", paymentResponse);
+    alert("Error");
+    console.log("Error", paymentResponse);
   }
 };
+
+const captureForm = document.getElementById("capture-form");
+captureForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const reqBody = {
+    payment_intent_id: document.getElementById("payment_intent_id").value
+  };
+  if (document.getElementById("amount_to_capture").value)
+    reqBody.amount_to_capture = Number(document.getElementById("amount_to_capture").value) * 100;
+
+  const res = await fetch("/capture", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(reqBody),
+  });
+  const captureResponse = await res.json();
+  handleServerResponse(captureResponse);
+});
+
+const cancelButton = document.getElementById("cancel-payment");
+cancelButton.addEventListener("click", async (event) => {
+  event.preventDefault();
+
+  const reqBody = {
+    payment_intent_id: document.getElementById("payment_intent_id").value
+  };
+
+  const res = await fetch("/cancel", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(reqBody),
+  });
+  const cancelResponse = await res.json();
+  handleServerResponse(cancelResponse);
+});
