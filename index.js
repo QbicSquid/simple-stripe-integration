@@ -39,16 +39,18 @@ const generateResponse = (intent) => {
     intent.status === "requires_action" &&
     intent.next_action.type === "use_stripe_sdk"
   ) {
+    console.log(`REQUIRES_ACTION | payment_intent_id: ${intent.id}}`);
     return {
       requires_action: true,
       payment_intent_client_secret: intent.client_secret,
     };
   } else if (intent.status === "succeeded") {
+    console.log(`PAYMENT_SUCCESSFUL | payment_intent_id: ${intent.id}}`);
     return {
       success: true,
     };
   } else if (intent.status === "requires_capture") {
-    console.log("Payment needs to be captured:", intent.id);
+    console.log(`REQUIRES_CAPTURE | payment_intent_id: ${intent.id}}`);
     return {
       success: true,
       requires_capture: true,
@@ -58,10 +60,12 @@ const generateResponse = (intent) => {
       },
     };
   } else if (intent.status === "canceled") {
+    console.log(`PAYMENT_CALCELLED | payment_intent_id: ${intent.id}}`);
     return {
       canceled: true,
     };
   } else {
+    console.log(`INVALID_STATUS | payment_intent_id: ${intent.id}} | status: ${intent.status}`);
     return {
       error: `Invalid PaymentIntent status | status: ${intent.status}`,
     };
@@ -78,7 +82,7 @@ app.post("/capture", async (request, response) => {
     const intent = await stripe.paymentIntents.capture(...captureData);
     response.send(generateResponse(intent));
   } catch (e) {
-    console.log(e.message);
+    console.log(`Error | payment_intent_id: ${request.body.payment_intent_id} | message: ${e.message}`);
     return response.send({ error: e.message });
   };
 });
