@@ -9,18 +9,21 @@ app.use("/public", express.static(__dirname + "/public"));
 app.get("/health", (req, res) => res.send("Ok"));
 
 app.post("/pay", async (request, response) => {
+  const createIntentBody = {
+    payment_method: request.body.payment_method_id,
+    amount: request.body.amount_to_pay,
+    currency: "usd",
+    confirmation_method: "manual",
+    confirm: true,
+    return_url: "http://localhost:8080/public/stripe.html",
+  }
+  if (request.body.capture_later)
+   createIntentBody.capture_method = "manual";
+
   try {
     let intent;
     if (request.body.payment_method_id) {
-      intent = await stripe.paymentIntents.create({
-        payment_method: request.body.payment_method_id,
-        amount: 100,
-        currency: "usd",
-        confirmation_method: "manual",
-        confirm: true,
-        return_url: "http://localhost:8080/public/stripe.html",
-        capture_method: 'manual',
-      });
+      intent = await stripe.paymentIntents.create(createIntentBody);
     } else if (request.body.payment_intent_id) {
       intent = await stripe.paymentIntents.confirm(
         request.body.payment_intent_id

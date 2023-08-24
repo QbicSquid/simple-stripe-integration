@@ -26,6 +26,8 @@ cardElement.mount("#card-element");
 const paymentform = document.getElementById("payment-form");
 paymentform.addEventListener("submit", async (event) => {
   event.preventDefault();
+  const captureLater = document.getElementById("capture-later").checked;
+  const amountToPay = Number(document.getElementById("amount_to_pay").value) * 100;
 
   const result = await stripe.createPaymentMethod({
     type: "card",
@@ -35,10 +37,10 @@ paymentform.addEventListener("submit", async (event) => {
     },
   });
 
-  stripePaymentMethodHandler(result);
+  stripePaymentMethodHandler(result, amountToPay, captureLater);
 });
 
-const stripePaymentMethodHandler = async (result) => {
+const stripePaymentMethodHandler = async (result, amountToPay, captureLater) => {
   if (result.error) {
   } else {
     const res = await fetch("/pay", {
@@ -46,6 +48,8 @@ const stripePaymentMethodHandler = async (result) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         payment_method_id: result.paymentMethod.id,
+        amount_to_pay: amountToPay,
+        capture_later: captureLater,
       }),
     });
     const paymentResponse = await res.json();

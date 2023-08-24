@@ -15,4 +15,4 @@ Node JS
 5. In the project root, execute the following commands.<br>
    > npm install<br>
    > npm run dev
-6. Access http://localhost:8080 in your browser and make payments. Observe the stripe dashboard.
+6. Access http://localhost:8080/public/stripe.html in your browser and make payments. Observe the stripe dashboard.
