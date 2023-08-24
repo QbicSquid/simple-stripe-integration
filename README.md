@@ -13,6 +13,6 @@ Node JS
 4. Add the Stripe secret key to the backend.<br>
    > In the file index.js, replace the string STRIPE_SECRET_KEY with your secret key.
 5. In the project root, execute the following commands.<br>
-   > npm install
+   > npm install<br>
    > npm run dev
 6. Access http://localhost:8080 in your browser and make payments. Observe the stripe dashboard.
